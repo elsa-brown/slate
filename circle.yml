@@ -1,25 +1,19 @@
 machine:
-  ruby:
-    version: 2.3.1
   node:
     version: 6.2.2
 
 dependencies:
-  pre:
-    - 'echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc'
-    - npm set progress=false
-    - npm install -g @shopify/slate
-  bundler:
-    without:
-      - benchmark
-      - deploy
-      - production
-      - debug
-  cache_directories:
-    - .bundle/
-
-test:
-  pre:
-    - slate build
   post:
-    - slate test
+    - npm run bootstrap
+
+deployment:
+  release:
+    tag: /v[0-9]+(\.[0-9]+)*/
+    owner: shopify
+    commands:
+      - cd packages/slate-theme/ && ./node_modules/.bin/slate zip
+      - node scripts/build
+      - node scripts/deploy
+      - curl -X PURGE https://sdks.shopifycdn.com/slate/latest/slate-theme.zip
+      - curl -X PURGE https://sdks.shopifycdn.com/slate/latest/slate-src.zip
+
